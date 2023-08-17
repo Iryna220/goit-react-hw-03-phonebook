@@ -4,6 +4,8 @@ import ContactForm from './ContactForm';
 import ContactList from './ContactList';
 import Filter from './Filter';
 import css from './App.module.css';
+import Notification from './Notification/Notification';
+
 class App extends Component {
   state = {
     contacts: [
@@ -14,6 +16,17 @@ class App extends Component {
     ],
     filter: '',
   };
+  componentDidMount() {
+    const scoredContacts = localStorage.getItem('contacts');
+    if (scoredContacts) {
+      this.setState({ contacts: JSON.parse(scoredContacts) });
+    }
+  }
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.contacts !== this.state.contacts) {
+      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+    }
+  }
 
   isDublicate(name) {
     const normalizedName = name.toLowerCase();
@@ -64,11 +77,17 @@ class App extends Component {
         <ContactForm onSubmit={this.addContact} />
         <h2 className={css.phonebookContacts}>Contacts</h2>
         <div className={css.allContacts}>All contacts: {contacts.length}</div>
-        <Filter value={filter} onChange={this.changeFilter} />
-        <ContactList
-          contacts={this.getVisibleContacts()}
-          onDeleteContact={this.deleteContact}
-        />
+        {contacts.length > 0 ? (
+          <>
+            <Filter value={filter} onChange={this.changeFilter} />
+            <ContactList
+              contacts={this.getVisibleContacts()}
+              onDeleteContact={this.deleteContact}
+            />
+          </>
+        ) : (
+          <Notification message="Contact list is empty" />
+        )}
       </div>
     );
   }
